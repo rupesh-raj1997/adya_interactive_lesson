@@ -1,19 +1,21 @@
 class Choice {
-  late int id;
+  // late int id;
   late String label;
   late String value;
   Choice({
-    required this.id,
+    // required this.id,
     required this.label,
     required this.value,
   });
 }
 
 class ChoiceBreakPoint {
-  late int time;
+  int? time;
+  late String question;
   List<Choice> choices = [];
   ChoiceBreakPoint({
-    required this.time,
+    this.time,
+    required this.question,
     required this.choices,
   });
 }

@@ -44,11 +44,11 @@ class Lesson {
 
   printLesson(Chapter? start) {
     if (start == null) return;
-
+    print(start.data.source);
     if (start.children.isNotEmpty) {
       for (var chap in start.children) {
         printLesson(chap);
-        print('${chap.data.videometa.name} ${chap.data.source} ');
+        // print('${chap.data.videometa.name} ${chap.data.source} ');
       }
     }
   }
