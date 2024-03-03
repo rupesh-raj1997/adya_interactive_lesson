@@ -1,6 +1,4 @@
 import 'package:adya_interactive_lesson/lesson/interactive.dart';
-import 'package:adya_interactive_lesson/models/lesson.dart';
-import 'package:adya_interactive_lesson/services/generate_lesson.dart';
 import 'package:flutter/material.dart';
 // import 'package:adya_interactive_lesson/lesson/normal.dart';
 

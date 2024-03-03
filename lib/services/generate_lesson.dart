@@ -117,13 +117,17 @@ Lesson fetchLesson(int id) {
   Chapter maleImplement1 = Chapter(chapter121Video);
   Chapter maleImplement2 = Chapter(chapter122Video);
 
-  // Chapter close = Chapter(chapter003Video);
+  Chapter close = Chapter(chapter003Video);
 
   lesson.addChapter(lesson.lessonStart, femaleChap);
   lesson.addChapter(lesson.lessonStart, maleChap);
+
   lesson.addChapter(femaleChap, femlateImplement);
+  lesson.addChapter(femlateImplement, close);
+
   lesson.addChapter(maleChap, maleImplement1);
   lesson.addChapter(maleChap, maleImplement2);
-
+  lesson.addChapter(maleImplement1, close);
+  lesson.addChapter(maleImplement2, close);
   return lesson;
 }

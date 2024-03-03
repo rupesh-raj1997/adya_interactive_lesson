@@ -1,6 +1,5 @@
 import 'package:adya_interactive_lesson/models/video.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 import 'package:adya_interactive_lesson/models/lesson.dart';
 import 'package:adya_interactive_lesson/services/generate_lesson.dart';
@@ -14,6 +13,7 @@ class InteractiveLesson extends StatefulWidget {
 }
 
 class _InteractiveLessonState extends State<InteractiveLesson> {
+  bool isLessonCompleted = false;
   Lesson? lesson;
   Chapter? currentChapter;
   int chapterIndex = 0;
@@ -44,18 +44,23 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
   }
 
   changeChapter(chapterNumber) {
-    Chapter? newChapter;
-    switch (chapterNumber) {
-      case 0:
-        print('moving to project planning');
-        newChapter = currentChapter?.children.firstWhere(
-          (chapter) => selectedChoice.contains('${chapter.data.videometa.id}'),
-        );
-        break;
-      case 1:
-        print('moving to project implementation');
-        break;
+    print('changing to $chapterNumber');
+
+    if (currentChapter?.children.length == 0) {
+      setState(() {
+        isLessonCompleted = true;
+      });
+      return;
     }
+    Chapter? newChapter;
+    if (currentChapter!.children.length > 1) {
+      newChapter = currentChapter?.children.firstWhere(
+        (chapter) => selectedChoice.contains('${chapter.data.videometa.id}'),
+      );
+    } else {
+      newChapter = currentChapter?.children.first;
+    }
+
     setState(() {
       currentChapter = newChapter;
       chapterName = '${currentChapter?.data.videometa.name}';
@@ -126,6 +131,17 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
     return FutureBuilder(
       future: _initializeVideoPlayerFuture,
       builder: (context, snapshot) {
+        if (isLessonCompleted) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Completed',
+                style: _nameStyle,
+              )
+            ],
+          );
+        }
         if (snapshot.connectionState == ConnectionState.done) {
           return Column(
             children: [
@@ -143,37 +159,43 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (chapterIndex > 0)
-                    FloatingActionButton(
-                      child: const Text(
-                        'Back',
-                        style: TextStyle(
-                          fontSize: 15.0,
-                          color: Colors.grey,
-                        ),
-                      ),
+                  // if (chapterIndex > 0)
+                  //   Padding(
+                  //     padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                  //     child: FloatingActionButton(
+                  //       child: const Text(
+                  //         'Back',
+                  //         style: TextStyle(
+                  //           fontSize: 15.0,
+                  //           color: Colors.grey,
+                  //         ),
+                  //       ),
+                  //       onPressed: () {
+                  //         setState(() {
+                  //           if (chapterIndex > 0) {
+                  //             chapterIndex -= 1;
+                  //           }
+                  //         });
+                  //       },
+                  //     ),
+                  //   ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                    child: FloatingActionButton(
                       onPressed: () {
                         setState(() {
-                          if (chapterIndex > 0) {
-                            chapterIndex -= 1;
+                          if (_controller.value.isPlaying) {
+                            _controller.pause();
+                          } else {
+                            _controller.play();
                           }
                         });
                       },
+                      // Display the correct icon depending on the state of the player.
+                      child: Icon(_controller.value.isPlaying
+                          ? Icons.pause
+                          : Icons.play_arrow),
                     ),
-                  FloatingActionButton(
-                    onPressed: () {
-                      setState(() {
-                        if (_controller.value.isPlaying) {
-                          _controller.pause();
-                        } else {
-                          _controller.play();
-                        }
-                      });
-                    },
-                    // Display the correct icon depending on the state of the player.
-                    child: Icon(_controller.value.isPlaying
-                        ? Icons.pause
-                        : Icons.play_arrow),
                   )
                 ],
               ),
@@ -234,19 +256,21 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         ElevatedButton(
-                            style: ButtonStyle(backgroundColor:
-                                MaterialStateColor.resolveWith((states) {
-                              if (states.contains(MaterialState.selected)) {
-                                return Colors.white70;
-                              } else {
-                                return Colors.white60;
-                              }
-                            })),
-                            onPressed:() => changeChapter(chapterIndex + 1),
-                            child: Text(
-                              'Procced',
-                              style: _nameStyle,
-                            ))
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateColor.resolveWith(
+                                (states) => Colors.green[300]!),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              chapterIndex += 1;
+                            });
+                            changeChapter(chapterIndex);
+                          },
+                          child: Text(
+                            'Procced',
+                            style: _nameStyle,
+                          ),
+                        )
                       ],
                     )
                   : const SizedBox(
