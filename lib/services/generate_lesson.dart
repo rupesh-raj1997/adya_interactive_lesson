@@ -67,7 +67,7 @@ VideoLesson chapter003Video = VideoLesson(
 VideoLesson chapter012Video = VideoLesson(
   source: chapter012,
   videometa: VideoMetaData(
-    id: 1,
+    id: 2,
     name: 'Mr. Ipsum plan',
     description: 'Ipsum explains his plan',
     choicebreakpoint: ChoiceBreakPoint(
@@ -99,7 +99,7 @@ VideoLesson chapter121Video = VideoLesson(
 VideoLesson chapter122Video = VideoLesson(
   source: chapter122,
   videometa: VideoMetaData(
-    id: 1,
+    id: 2,
     name: 'Mr. Ipsum implementation',
     description: 'Ipsum implements his plan 2 using approach 2 to completion',
     choicebreakpoint:
@@ -107,21 +107,19 @@ VideoLesson chapter122Video = VideoLesson(
   ),
 );
 
-
 Lesson fetchLesson(int id) {
-  
-  Lesson lesson = Lesson(chapter001Video);
+  final Lesson lesson = Lesson(chapter001Video);
 
-  Chapter femaleChap =  Chapter(chapter011Video);
+  Chapter femaleChap = Chapter(chapter011Video);
   Chapter femlateImplement = Chapter(chapter111Video);
 
-  Chapter maleChap =  Chapter(chapter012Video);
+  Chapter maleChap = Chapter(chapter012Video);
   Chapter maleImplement1 = Chapter(chapter121Video);
   Chapter maleImplement2 = Chapter(chapter122Video);
 
-  Chapter close = Chapter(chapter003Video);
+  // Chapter close = Chapter(chapter003Video);
 
-  lesson.addChapter(lesson.lessonStart,femaleChap);
+  lesson.addChapter(lesson.lessonStart, femaleChap);
   lesson.addChapter(lesson.lessonStart, maleChap);
   lesson.addChapter(femaleChap, femlateImplement);
   lesson.addChapter(maleChap, maleImplement1);

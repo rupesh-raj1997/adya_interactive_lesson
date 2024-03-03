@@ -1,43 +1,107 @@
+import 'package:adya_interactive_lesson/models/video.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
+import 'package:adya_interactive_lesson/models/lesson.dart';
+import 'package:adya_interactive_lesson/services/generate_lesson.dart';
 
-void main() => runApp(VideoPlayerApp());
-
-class VideoPlayerApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return VideoPlayerScreen(key: Key('value'),);
-  }
-}
-
-class VideoPlayerScreen extends StatefulWidget {
-  const VideoPlayerScreen({Key? key}) : super(key: key);
+class InteractiveLesson extends StatefulWidget {
+  final int lessonId;
+  const InteractiveLesson({super.key, required this.lessonId});
 
   @override
-  _VideoPlayerScreenState createState() => _VideoPlayerScreenState();
+  _InteractiveLessonState createState() => _InteractiveLessonState();
 }
 
-class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+class _InteractiveLessonState extends State<InteractiveLesson> {
+  Lesson? lesson;
+  Chapter? currentChapter;
+  int chapterIndex = 0;
   late VideoPlayerController _controller;
   late Future<void>? _initializeVideoPlayerFuture;
-  late int _playBackTime;
+
+  String chapterName = '';
+  String chapterDesc = '';
+  late ChoiceBreakPoint? chapterBreakPoint;
+
+  bool showChoices = false;
+  String selectedChoice = '';
+  bool showProceedButton = false;
+  Map<String, dynamic> choiceData = {};
 
   //The values that are passed when changing quality
   late Duration newCurrentPosition;
 
-  String defaultStream =
-      'https://archive.org/download/Damas_BB_28F8B535_D_406/DaMaS.mp4';
-  String stream2 = 'https://archive.org/download/cCloud_20151126/cCloud.mp4';
-  String stream3 = 'https://archive.org/download/mblbhs/mblbhs.mp4';
+  setupLessonContent(lessonId) {
+    setState(() {
+      lesson = fetchLesson(lessonId);
+      currentChapter = lesson?.lessonStart;
+      chapterIndex = 0;
+      chapterName = '${currentChapter?.data.videometa.name}';
+      chapterDesc = '${currentChapter?.data.videometa.description}';
+      chapterBreakPoint = currentChapter?.data.videometa.choicebreakpoint;
+    });
+  }
+
+  changeChapter(chapterNumber) {
+    Chapter? newChapter;
+    switch (chapterNumber) {
+      case 0:
+        print('moving to project planning');
+        newChapter = currentChapter?.children.firstWhere(
+          (chapter) => selectedChoice.contains('${chapter.data.videometa.id}'),
+        );
+        break;
+      case 1:
+        print('moving to project implementation');
+        break;
+    }
+    setState(() {
+      currentChapter = newChapter;
+      chapterName = '${currentChapter?.data.videometa.name}';
+      chapterDesc = '${currentChapter?.data.videometa.description}';
+      chapterBreakPoint = currentChapter?.data.videometa.choicebreakpoint;
+      _initializeVideoPlayerFuture = null;
+      _controller = VideoPlayerController.networkUrl(
+        Uri.parse('${currentChapter?.data.source}'),
+      );
+      _controller.addListener(videoListener);
+      _initializeVideoPlayerFuture = _controller.initialize();
+      _controller.play();
+      showChoices = false;
+      showProceedButton = false;
+    });
+  }
+
+  videoListener() {
+    print(_controller.value.position);
+    print(_controller.value.position + const Duration(microseconds: 1000) ==
+        _controller.value.duration);
+    print('${_controller.value.isCompleted} is completed');
+    if (_controller.value.isCompleted) {
+      print('show choices now');
+      setState(() {
+        if (chapterBreakPoint != null) {
+          if (chapterBreakPoint!.choices.isNotEmpty) {
+            showChoices = true;
+          } else {
+            showProceedButton = true;
+          }
+        }
+      });
+    }
+  }
 
   @override
   void initState() {
-    _controller = VideoPlayerController.networkUrl(Uri.parse(defaultStream));
-    _controller.addListener(() {
-      setState(() {
-        _playBackTime = _controller.value.position.inSeconds;
-      });
-    });
+    // setup the the lesson and current chapter related content
+    setupLessonContent(widget.lessonId);
+    // start with the first video
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse('${currentChapter?.data.source}'),
+    );
+
+    _controller.addListener(videoListener);
     _initializeVideoPlayerFuture = _controller.initialize();
     super.initState();
   }
@@ -51,40 +115,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     super.dispose();
   }
 
-  Future<bool> _clearPrevious() async {
-    await _controller?.pause();
-    return true;
-  }
-
-  Future<void> _initializePlay(String videoPath) async {
-    _controller = VideoPlayerController.network(videoPath);
-    _controller.addListener(() {
-      setState(() {
-        _playBackTime = _controller.value.position.inSeconds;
-      });
-    });
-    _initializeVideoPlayerFuture = _controller.initialize().then((_) {
-      _controller.seekTo(newCurrentPosition);
-      _controller.play();
-    });
-  }
-
-  void _getValuesAndPlay(String videoPath) {
-    newCurrentPosition = _controller.value.position;
-    _startPlay(videoPath);
-    print(newCurrentPosition.toString());
-  }
-
-  Future<void> _startPlay(String videoPath) async {
-    setState(() {
-      _initializeVideoPlayerFuture = null;
-    });
-    Future.delayed(const Duration(milliseconds: 200), () {
-      _clearPrevious().then((_) {
-        _initializePlay(videoPath);
-      });
-    });
-  }
+  final _nameStyle = const TextStyle(
+    fontSize: 20,
+    color: Colors.white,
+    decoration: TextDecoration.none,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -92,89 +127,134 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       future: _initializeVideoPlayerFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          return Stack(
-            children: <Widget>[
-              Center(
-                child: AspectRatio(
-                  aspectRatio: _controller.value.aspectRatio,
-                  // Use the VideoPlayer widget to display the video.
-                  child: VideoPlayer(_controller),
-                ),
+          return Column(
+            children: [
+              const SizedBox(
+                height: 10,
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  color: Colors.black54,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Container(
-                        child: FloatingActionButton(
-                          onPressed: () {
-                            // Wrap the play or pause in a call to `setState`. This ensures the
-                            // correct icon is shown.
-                            setState(() {
-                              // If the video is playing, pause it.
-                              if (_controller.value.isPlaying) {
-                                _controller.pause();
-                              } else {
-                                // If the video is paused, play it.
-                                _controller.play();
-                              }
-                            });
-                          },
-                          // Display the correct icon depending on the state of the player.
-                          child: Icon(
-                            _controller.value.isPlaying
-                                ? Icons.pause
-                                : Icons.play_arrow,
+              AspectRatio(
+                // key: Key(${currentChapter?.data.source}),
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (chapterIndex > 0)
+                    FloatingActionButton(
+                      child: const Text(
+                        'Back',
+                        style: TextStyle(
+                          fontSize: 15.0,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          if (chapterIndex > 0) {
+                            chapterIndex -= 1;
+                          }
+                        });
+                      },
+                    ),
+                  FloatingActionButton(
+                    onPressed: () {
+                      setState(() {
+                        if (_controller.value.isPlaying) {
+                          _controller.pause();
+                        } else {
+                          _controller.play();
+                        }
+                      });
+                    },
+                    // Display the correct icon depending on the state of the player.
+                    child: Icon(_controller.value.isPlaying
+                        ? Icons.pause
+                        : Icons.play_arrow),
+                  )
+                ],
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Name: $chapterName',
+                    style: _nameStyle,
+                  ),
+                  Text(
+                    'Description $chapterDesc',
+                    style: _nameStyle,
+                  )
+                ],
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              showChoices
+                  ? Text(
+                      '${chapterBreakPoint?.question}',
+                      style: _nameStyle,
+                    )
+                  : const SizedBox(
+                      height: 10,
+                    ),
+              if (showChoices && chapterBreakPoint?.choices != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (chapterBreakPoint!.choices.isNotEmpty)
+                      for (var choice in chapterBreakPoint!.choices)
+                        Material(
+                          color: Colors.black,
+                          child: RadioListTile(
+                            title: Text(
+                              choice.label,
+                              style: _nameStyle,
+                            ),
+                            value: choice.value,
+                            groupValue: selectedChoice,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedChoice = value!;
+                                showProceedButton = true;
+                              });
+                            },
                           ),
                         ),
-                      ),
-                      Container(
-                        child: Text(
-                          _controller.value.position
-                              .toString()
-                              .split('.')
-                              .first
-                              .padLeft(8, "0"),
-                        ),
-                      ),
-                      Container(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _getValuesAndPlay(defaultStream);
-                          },
-                          child: const Text('Default Stream'),
-                        ),
-                      ),
-                      Container(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _getValuesAndPlay(stream2);
-                          },
-                          child: const Text('Video Stream 2'),
-                        ),
-                      ),
-                      Container(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _getValuesAndPlay(stream3);
-
-                            print('Green Button');
-                          },
-                          child: Text('Video Stream 3'),
-                        ),
-                      )
-                    ],
-                  ),
+                  ],
                 ),
-              ),
+              showProceedButton
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                            style: ButtonStyle(backgroundColor:
+                                MaterialStateColor.resolveWith((states) {
+                              if (states.contains(MaterialState.selected)) {
+                                return Colors.white70;
+                              } else {
+                                return Colors.white60;
+                              }
+                            })),
+                            onPressed:() => changeChapter(chapterIndex + 1),
+                            child: Text(
+                              'Procced',
+                              style: _nameStyle,
+                            ))
+                      ],
+                    )
+                  : const SizedBox(
+                      height: 10.0,
+                    )
             ],
           );
         } else {
-          // If the VideoPlayerController is still initializing, show a
-          // loading spinner.
           return const Center(child: CircularProgressIndicator());
         }
       },

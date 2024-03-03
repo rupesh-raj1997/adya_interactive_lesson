@@ -6,15 +6,15 @@ import 'package:flutter/material.dart';
 
 void main() {
   print('########################################################');
-  int userId = 1;
-  Lesson interactiveLesson = fetchLesson(userId);
-  Chapter lessonStart = interactiveLesson.lessonStart;
-  interactiveLesson.printLesson(lessonStart);
+  const lessonId = 1;
+  // final Lesson interactiveLesson = fetchLesson(userId);
+  // Chapter lessonStart = interactiveLesson.lessonStart;
+  // interactiveLesson.printLesson(lessonStart);
   print('########################################################');
   runApp(
     const MaterialApp(
       title: 'Adya Interactive Lesson',
-      home: VideoPlayerScreen(),
+      home: InteractiveLesson(lessonId: lessonId),
     ),
   );
 }
