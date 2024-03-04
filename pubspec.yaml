@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  smooth_video_progress: ^0.0.4
   video_player: ^2.8.2
 
 dev_dependencies:
