@@ -35,7 +35,7 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
 
   setupLessonContent(lessonId) {
     setState(() {
-      lesson = fetchLesson(lessonId);
+      lesson = loadLesson();
       currentChapter = lesson?.lessonStart;
       chapterIndex = 0;
       chapterName = '${currentChapter?.data.videometa.name}';

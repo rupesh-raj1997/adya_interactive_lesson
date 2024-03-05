@@ -2,18 +2,15 @@ import 'package:adya_interactive_lesson/constants/static.dart';
 import 'package:adya_interactive_lesson/models/lesson.dart';
 import 'package:adya_interactive_lesson/models/video.dart';
 
-String chapter001 = '$CLOUDFRONT_URL/start_discuss_1.mp4'; // done
-String chapter011 = '$CLOUDFRONT_URL/female_plan_11.mp4'; // done
-String chapter012 = '$CLOUDFRONT_URL/male_plan_12.mp4';
-String chapter111 = '$CLOUDFRONT_URL/female_implement_111.mp4'; // done
-String chapter121 = '$CLOUDFRONT_URL/male_implement_121.mp4';
-String chapter122 = '$CLOUDFRONT_URL/male_implement_122.mp4';
-String chapter003 = '$CLOUDFRONT_URL/project_complete.mp4'; // done
+String s3ResourceURL(String resourceName) {
+  return '$CLOUDFRONT_URL/$resourceName';
+}
 
-VideoLesson chapter001Video = VideoLesson(
-  source: chapter001,
-  videometa: VideoMetaData(
+ChapterVideo chapter001Video = ChapterVideo(
+  source: s3ResourceURL('start_discuss_1.mp4'),
+  videometa: ChapterMeta(
     id: 1,
+    duration: 14.0,
     name: 'Lesson Start',
     description: 'Start of Lesson',
     choicebreakpoint: ChoiceBreakPoint(
@@ -32,10 +29,11 @@ VideoLesson chapter001Video = VideoLesson(
   ),
 );
 
-VideoLesson chapter011Video = VideoLesson(
-  source: chapter011,
-  videometa: VideoMetaData(
+ChapterVideo chapter011Video = ChapterVideo(
+  source: s3ResourceURL('female_plan_11.mp4'),
+  videometa: ChapterMeta(
     id: 1,
+    duration: 19.0,
     name: 'Ms Lorem plan',
     description: 'Lorem explains her plan',
     choicebreakpoint:
@@ -43,10 +41,11 @@ VideoLesson chapter011Video = VideoLesson(
   ),
 );
 
-VideoLesson chapter111Video = VideoLesson(
-  source: chapter111,
-  videometa: VideoMetaData(
+ChapterVideo chapter111Video = ChapterVideo(
+  source: s3ResourceURL('female_implement_111.mp4'),
+  videometa: ChapterMeta(
     id: 1,
+    duration: 12.0 ,
     name: 'Ms Lorem implementation',
     description: 'Lorem implemets her plan to completion',
     choicebreakpoint:
@@ -54,20 +53,22 @@ VideoLesson chapter111Video = VideoLesson(
   ),
 );
 
-VideoLesson chapter003Video = VideoLesson(
-  source: chapter003,
-  videometa: VideoMetaData(
+ChapterVideo chapter003Video = ChapterVideo(
+  source: s3ResourceURL('project_complete.mp4'),
+  videometa: ChapterMeta(
     id: 1,
+    duration: 20.0,
     name: 'Project complete',
     description: 'We have completed the project',
     choicebreakpoint: ChoiceBreakPoint(question: 'Restart?', choices: []),
   ),
 );
 
-VideoLesson chapter012Video = VideoLesson(
-  source: chapter012,
-  videometa: VideoMetaData(
+ChapterVideo chapter012Video = ChapterVideo(
+  source: s3ResourceURL('male_plan_12.mp4'),
+  videometa: ChapterMeta(
     id: 2,
+    duration: 18.0,
     name: 'Mr. Ipsum plan',
     description: 'Ipsum explains his plan',
     choicebreakpoint: ChoiceBreakPoint(
@@ -85,10 +86,11 @@ VideoLesson chapter012Video = VideoLesson(
   ),
 );
 
-VideoLesson chapter121Video = VideoLesson(
-  source: chapter121,
-  videometa: VideoMetaData(
+ChapterVideo chapter121Video = ChapterVideo(
+  source: s3ResourceURL('male_implement_121.mp4'),
+  videometa: ChapterMeta(
     id: 1,
+    duration: 21.0,
     name: 'Mr. Ipsum implementation',
     description: 'Ipsum implements his plan 1 using approach 1 to completion',
     choicebreakpoint:
@@ -96,10 +98,11 @@ VideoLesson chapter121Video = VideoLesson(
   ),
 );
 
-VideoLesson chapter122Video = VideoLesson(
-  source: chapter122,
-  videometa: VideoMetaData(
+ChapterVideo chapter122Video = ChapterVideo(
+  source: s3ResourceURL('male_implement_122.mp4'),
+  videometa: ChapterMeta(
     id: 2,
+    duration: 14.0,
     name: 'Mr. Ipsum implementation',
     description: 'Ipsum implements his plan 2 using approach 2 to completion',
     choicebreakpoint:
@@ -107,7 +110,7 @@ VideoLesson chapter122Video = VideoLesson(
   ),
 );
 
-Lesson fetchLesson(int id) {
+Lesson loadLesson() {
   final Lesson lesson = Lesson(chapter001Video);
 
   Chapter femaleChap = Chapter(chapter011Video);

@@ -4,7 +4,7 @@ import 'package:adya_interactive_lesson/models/video.dart';
 // Lesson is of tree data type and it is composed of Chapters
 
 class Chapter {
-  VideoLesson data;
+  ChapterVideo data;
   List<Chapter> children;
 
   Chapter(this.data) : children = [];
@@ -12,13 +12,16 @@ class Chapter {
   void addChild(Chapter node) {
     children.add(node);
   }
+
+  String get videoURL => data.source;
+
 }
 
 class Lesson {
   late Chapter lessonStart;
 
-  Lesson(VideoLesson videoLesson) {
-    lessonStart = Chapter(videoLesson);
+  Lesson(ChapterVideo ChapterVideo) {
+    lessonStart = Chapter(ChapterVideo);
   }
 
   void addChapter(Chapter parentChapter, Chapter newChapter) {
@@ -30,7 +33,7 @@ class Lesson {
     }
   }
 
-  Chapter? _findNode(Chapter node, VideoLesson data) {
+  Chapter? _findNode(Chapter node, ChapterVideo data) {
     if (node.data == data) return node;
     Chapter? result;
     for (var child in node.children) {

@@ -20,23 +20,27 @@ class ChoiceBreakPoint {
   });
 }
 
-class VideoLesson {
+class ChapterVideo {
   late String source;
-  late VideoMetaData videometa;
-  VideoLesson({
+  late ChapterMeta videometa;
+  ChapterVideo({
     required this.source,
     required this.videometa,
   });
+
+  
 }
 
-class VideoMetaData {
+class ChapterMeta {
   late int id;
+  late double duration;
   String? name = '';
   String? description = '';
   ChoiceBreakPoint? choicebreakpoint;
 
-  VideoMetaData({
+  ChapterMeta({
     required this.id,
+    required this.duration,
     this.name,
     this.description,
     this.choicebreakpoint,
