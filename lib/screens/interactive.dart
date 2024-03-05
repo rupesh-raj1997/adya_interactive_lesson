@@ -44,9 +44,7 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
     });
   }
 
-  changeChapter(chapterNumber) {
-    print('changing to $chapterNumber');
-
+  changeChapter() {
     if (currentChapter?.children.length == 0) {
       setState(() {
         isLessonCompleted = true;
@@ -95,12 +93,8 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
     setState(() {
       _playbackTime = sliderValue;
     });
-    print(_controller.value.position);
-    print(_controller.value.position + const Duration(microseconds: 1000) ==
-        _controller.value.duration);
-    print('${_controller.value.isCompleted} is completed');
+
     if (_controller.value.isCompleted) {
-      print('show choices now');
       setState(() {
         if (chapterBreakPoint != null) {
           if (chapterBreakPoint!.choices.isEmpty) {
@@ -109,7 +103,7 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
               showChoices = false;
               chapterIndex += 1;
             });
-            changeChapter(chapterIndex);
+            changeChapter();
           } else {
             showChoices = true;
           }
@@ -120,9 +114,7 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
 
   @override
   void initState() {
-    // setup the the lesson and current chapter related content
     setupLessonContent(widget.lessonId);
-    // start with the first video
     _controller = VideoPlayerController.networkUrl(
       Uri.parse('${currentChapter?.data.source}'),
     );
@@ -146,6 +138,63 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
     color: Colors.white,
     decoration: TextDecoration.none,
   );
+
+  changeVideoTime(double newTime) {
+    if (_controller != null) {
+      print('changeVideoTime curr position ${_controller.value.position}');
+      print('changeVideoTime new time $newTime');
+      setState(() {
+        _playbackTime = newTime;
+      });
+      if (0.0 < newTime && newTime < 14.0) {
+        print('first video');
+        setState(() {
+          currentChapter = lesson?.lessonStart;
+          chapterIndex = 0;
+          chapterName = '${currentChapter?.data.videometa.name}';
+          chapterDesc = '${currentChapter?.data.videometa.description}';
+          chapterBreakPoint = currentChapter?.data.videometa.choicebreakpoint;
+        });
+      } else if (14.0 < newTime && newTime < 32.5) {
+        setState(() {
+          currentChapter = lesson?.lessonStart.children.first;
+          print(_controller.dataSource);
+          //   VideoPlayerController.networkUrl(
+          //     Uri.parse('${currentChapter?.data.source}'),
+          //   ).initialize();
+        });
+        _controller.seekTo(Duration(
+          seconds: newTime.floor() - 14,
+          microseconds: (newTime * 1000).round(),
+        ));
+      } else if (32.5 < newTime && newTime < 47.5) {
+        print('third video');
+        setState(() {
+          currentChapter = lesson?.lessonStart.children.first.children.first;
+          _controller = VideoPlayerController.networkUrl(
+            Uri.parse('${currentChapter?.data.source}'),
+          );
+        });
+        _controller.seekTo(Duration(
+          seconds: newTime.floor() - 32,
+          microseconds: (newTime * 1000).round(),
+        ));
+      } else if (47.5 < newTime && newTime < 67.5) {
+        print('fourth video');
+        setState(() {
+          currentChapter =
+              lesson?.lessonStart.children.first.children.first.children.first;
+          _controller = VideoPlayerController.networkUrl(
+            Uri.parse('${currentChapter?.data.source}'),
+          );
+        });
+        _controller.seekTo(Duration(
+          seconds: newTime.floor() - 47,
+          microseconds: (newTime * 1000).round(),
+        ));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -211,31 +260,23 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
                 ),
                 Material(
                   child: Slider(
-                    min: 0,
-                    max: 67.5,
-                    value: _playbackTime,
-                    onChanged: (newVal) {
-                      if (newVal > _playbackTime) {
+                      min: 0,
+                      max: 67.5,
+                      value: _playbackTime,
+                      onChanged: (newVal) {
+                        setState(() {
+                          if (newVal + 1.0 < _playbackTime) {
+                            changeVideoTime(newVal);
+                          }
+                        });
                         return;
-                      } else {
-                        if (0 < newVal && newVal < 15) {
-                          changeChapter(0);
-                        } else if (0 <= newVal && newVal < 15) {
-                          changeChapter(1);
-                        } else if (15 <= newVal && newVal < 32.5) {
-                          changeChapter(2);
-                        } else if (32.5 <= newVal) {
-                          changeChapter(3);
-                        }
-                      }
-                      print('new val $newVal, $_playbackTime');
-                    },
-                    onChangeStart: (val) {
-                      print('started dragging $val');
-                      _controller.pause();
-                    },
-                    onChangeEnd: (_) => _controller.play(),
-                  ),
+                      },
+                      onChangeStart: (val) {
+                        //   _controller.pause();
+                      },
+                      onChangeEnd: (_) => {
+                            // _controller.play();
+                          }),
                 ),
                 const SizedBox(
                   height: 10,
@@ -259,6 +300,10 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
                             ? Icons.pause
                             : Icons.play_arrow),
                       ),
+                    ),
+                    Text(
+                      '${_playbackTime.toStringAsFixed(1)}',
+                      style: _nameStyle,
                     )
                   ],
                 ),
@@ -327,7 +372,7 @@ class _InteractiveLessonState extends State<InteractiveLesson> {
                               setState(() {
                                 chapterIndex += 1;
                               });
-                              changeChapter(chapterIndex);
+                              changeChapter();
                             },
                             child: Text(
                               'Procced',
