@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Widget PrimaryButton({onPressed, child}) {
+Widget PrimaryButton({onPressed, child, disabled}) {
   return ElevatedButton(
     onPressed: onPressed,
     child: child,
