@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:adya_interactive_lesson/models/lesson.dart';
 import 'package:adya_interactive_lesson/models/video.dart';
+import 'package:adya_interactive_lesson/utils/converters.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
@@ -29,6 +32,7 @@ class LessonState extends Equatable {
   late VideoPlayerController controller;
   bool canStartChapter = false;
   bool canStartLesson = false;
+  double currentPosition = 0.0;
   final List<Chapter> completedChapters = [];
   final Map<Chapter, Choice> selectedChoices = {};
 
@@ -37,11 +41,39 @@ class LessonState extends Equatable {
     controller = VideoPlayerController.networkUrl(
       Uri.parse(_lesson.lessonStart.videoURL),
     );
+    controller.addListener(() {
+      currentPosition = controller.value.position.inSeconds.toDouble();
+      // print('state position ${controller.value.position.inSeconds.toDouble()}');
+    });
   }
 
   bool get isPlaying => controller.value.isPlaying;
   bool get isInitialized => controller.value.isInitialized;
-  Duration get currPosition => controller.value.position;
+
+  double get lessonDuration {
+    List<double> sums = pathSum(findAllPaths(_lesson.lessonStart));
+    return sums.reduce((value, element) => value + element) / sums.length;
+  }
+
+
+  List<List> findAllPaths(Chapter root) {
+    List<List> paths = [];
+    void dfs(Chapter chapter, List<dynamic> path) {
+      path.add(chapter.data.videometa.duration);
+
+      if (chapter.children.isEmpty) {
+        paths.add(List.from(path));
+      } else {
+        for (var child in chapter.children) {
+          dfs(child, path);
+        }
+      }
+      path.removeLast();
+    }
+
+    dfs(root, []);
+    return paths;
+  }
 
   @override
   List<Object> get props => [
@@ -49,13 +81,12 @@ class LessonState extends Equatable {
         completedChapters,
         selectedChoices,
         canStartChapter,
-        canStartLesson
+        canStartLesson,
       ];
 
   @override
   String toString() {
-    // TODO: implement toString
-    return 'state canStartChapter $canStartChapter canStartLesson $canStartLesson controller $controller';
+    return 'state $currentPosition currentPosition $lessonDuration lessonDuration $controller';
   }
 }
 
