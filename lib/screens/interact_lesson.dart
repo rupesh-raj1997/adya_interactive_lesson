@@ -17,6 +17,11 @@ class _InteractLessonState extends State<InteractLesson> {
   final bloc = LessonBloc(loadLesson());
 
   @override
+  void initState() {
+    super.initState(); //
+  }
+
+  @override
   void dispose() {
     bloc.close();
     super.dispose();
@@ -29,7 +34,7 @@ class _InteractLessonState extends State<InteractLesson> {
       create: (context) => bloc,
       child: BlocBuilder<LessonBloc, LessonState>(
         builder: (context, state) {
-          print('state $state');
+          print('state duration ${state.currentPosition}'); //
           if (!state.canStartLesson) {
             BlocProvider.of<LessonBloc>(context).add(LessonInitializing());
           }
@@ -51,15 +56,15 @@ class _InteractLessonState extends State<InteractLesson> {
               //  video progress bar
               Slider(
                 min: 0,
-                max: 10,
-                value: 5,
+                max: state.lessonDuration,
+                value: state.currentPosition,
                 onChanged: (val) {},
                 onChangeStart: (val) {},
                 onChangeEnd: (val) => {},
               ),
               //   controls
               Row(
-				mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 10.0, right: 10.0),
@@ -87,9 +92,7 @@ class _InteractLessonState extends State<InteractLesson> {
                           }
                         },
                         child: Icon(
-                          state.isPlaying
-                              ? Icons.pause
-                              : Icons.play_arrow,
+                          state.isPlaying ? Icons.pause : Icons.play_arrow,
                           color: Colors.white,
                         ),
                       )),
@@ -101,7 +104,7 @@ class _InteractLessonState extends State<InteractLesson> {
                             .add(SeekLesson(10.0));
                       },
                       child: const Text(
-                        '-10',
+                        '+10',
                         style: btnFontStyle,
                       ),
                     ),
