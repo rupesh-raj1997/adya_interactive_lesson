@@ -27,7 +27,8 @@ final class ProgressChapter extends LessonEvent {
   const ProgressChapter(this.newPosition);
 }
 
+// move to a specific time
 final class SeekLesson extends LessonEvent {
   final double amount;
   const SeekLesson(this.amount);
-} // move to a specific time
+} 

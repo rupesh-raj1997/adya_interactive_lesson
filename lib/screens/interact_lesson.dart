@@ -6,13 +6,10 @@ import 'package:adya_interactive_lesson/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
+import 'package:restart_app/restart_app.dart';
 
 class InteractLesson extends StatelessWidget {
   const InteractLesson({super.key});
-
-  Function handleRestart() {
-    return () => {};
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +30,12 @@ class InteractLesson extends StatelessWidget {
                     height: 10.0,
                   ),
                   ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateColor.resolveWith(
+                          (states) => Colors.green[300]!),
+                    ),
                     onPressed: () {
-                      restart(context);
+                      Restart.restartApp();
                     },
                     child: const Text(
                       'Restart',
@@ -54,22 +55,31 @@ class InteractLesson extends StatelessWidget {
                 children: [
                   // video player
                   SizedBox(
-                      width: MediaQuery.of(context).size.width + 10,
-                      height: MediaQuery.of(context).size.height / 3,
-                      child: state.isLessonLoaded
-                          ? AspectRatio(
-                              aspectRatio: state.controller.value.aspectRatio,
-                              child: VideoPlayer(state.controller),
-                            )
-                          : circularLoader()),
+                    width: MediaQuery.of(context).size.width + 10,
+                    height: MediaQuery.of(context).size.height / 3,
+                    child: state.isLessonLoaded
+                        ? AspectRatio(
+                            aspectRatio: state.controller.value.aspectRatio,
+                            child: VideoPlayer(state.controller),
+                          )
+                        : circularLoader(),
+                  ),
                   //  video progress bar
                   Slider(
                     min: 0,
                     max: state.lessonDuration,
                     value: state.currentProgress,
-                    onChanged: (val) {},
-                    onChangeStart: (val) {},
-                    onChangeEnd: (val) => {},
+                    onChanged: (val) {
+                      print('slider onChanged $val');
+                    },
+                    onChangeStart: (val) {
+                      print('slider onChangeStart $val');
+                    },
+                    onChangeEnd: (val) {
+                      print('slider onChangeEnd ${val.toStringAsFixed(2)}');
+                      context.read<LessonBloc>().add(
+                          SeekLesson(double.parse(val.toStringAsFixed(2))));
+                    },
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -111,7 +121,9 @@ class InteractLesson extends StatelessWidget {
                   ),
                   // name and chapter number
                   chapterDetails(),
-                  const ChapterQuestionnaire(),
+                  ChapterQuestionnaire(
+                    key: Key('${state.isCurrChapterDone}'),
+                  ),
                 ],
               ),
             );
@@ -173,6 +185,7 @@ class _ChapterQuestionnaireState extends State<ChapterQuestionnaire> {
         return Padding(
           padding: const EdgeInsets.only(left: 15.0, right: 15.0),
           child: Column(
+            key: Key('${state.isCurrChapterDone}'),
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (state.isCurrChapterDone) ...[
@@ -230,8 +243,8 @@ class _ChapterQuestionnaireState extends State<ChapterQuestionnaire> {
                                     .read<LessonBloc>()
                                     .add(SaveChapterChoice(reqChoice));
                                 setState(() {
-                                  showProceedButton = false;
-                                  selectedChoice = '';
+                                  // showProceedButton = false;
+                                  // selectedChoice = '';
                                 });
                               }
                             });

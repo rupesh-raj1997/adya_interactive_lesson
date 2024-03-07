@@ -1,6 +1,6 @@
 import 'package:adya_interactive_lesson/models/lesson.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:restart_app/restart_app.dart';
 
 List<double> pathSum(List<List> data) {
   List<double> sums = [];
@@ -32,7 +32,7 @@ List<List> findAllPaths(Chapter root) {
 
 int findHeight(Chapter root) {
   if (root.children.isEmpty) {
-    return 1;
+    return 0;
   }
   int maxHeight = 0;
   for (var child in root.children) {
@@ -44,5 +44,5 @@ int findHeight(Chapter root) {
 }
 
 void restart(BuildContext context) {
-  Phoenix.rebirth(context);
+  Restart.restartApp();
 }

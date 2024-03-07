@@ -114,5 +114,9 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     on<CompleteLesson>((event, emit) async {
       emit(state.copyWith(isLessonCompleted: true));
     });
+
+    on<SeekLesson>((event, emit) async {
+      print(event.amount);
+    });
   }
 }
