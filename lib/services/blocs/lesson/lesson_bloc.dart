@@ -116,7 +116,46 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     });
 
     on<SeekLesson>((event, emit) async {
-      print(event.amount);
+      print('change the slider positon ${event.amount}');
+      double total = 0.0;
+      Chapter reqChapter = state.currentChapter;
+      int reqChapterIndex = -1;
+
+      for (var i = 0; i < state.completedChapters.length; i++) {
+        Chapter chapter = state.completedChapters[i];
+        var chapterDuration = chapter.data.videometa.duration;
+        if (total <= event.amount && event.amount <= total + chapterDuration) {
+          reqChapter = chapter;
+          reqChapterIndex = i;
+          break;
+        } else {
+          total += chapter.data.videometa.duration;
+        }
+      }
+      if (reqChapter.videoURL != state.currentChapter.videoURL) {
+        var newController =
+            VideoPlayerController.networkUrl(Uri.parse(reqChapter.videoURL));
+        await newController.initialize();
+        newController.addListener(_controllerListener);
+        List<Chapter> newCompletedChaps = List.from(state.completedChapters)
+          ..removeRange(reqChapterIndex, state.completedChapters.length);
+        emit(state.copyWith(
+          controller: newController,
+          isCurrChapterDone: false,
+          completedChapters: newCompletedChaps,
+          currentProgress: event.amount,
+          currentChapter: reqChapter,
+        ));
+      } else if (reqChapter.videoURL == state.currentChapter.videoURL) {
+        print('change the time to ${event.amount}');
+        await state.controller.pause();
+        await state.controller.seekTo(Duration(seconds: event.amount.toInt()));
+        await state.controller.play();
+        emit(state.copyWith(
+          isCurrChapterDone: false,
+          currentProgress: event.amount,
+        ));
+      }
     });
   }
 }
