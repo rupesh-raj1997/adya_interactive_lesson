@@ -1,3 +1,4 @@
+import 'package:adya_interactive_lesson/models/video.dart';
 import 'package:adya_interactive_lesson/services/blocs/lesson/lesson_bloc.dart';
 import 'package:adya_interactive_lesson/widgets/button.dart';
 import 'package:adya_interactive_lesson/widgets/loader.dart';
@@ -10,47 +11,36 @@ class InteractLesson extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // video player
-        SizedBox(
-          width: MediaQuery.of(context).size.width + 10,
-          height: MediaQuery.of(context).size.height / 3,
-          child: BlocBuilder<LessonBloc, LessonState>(
-            builder: (context, state) {
-              return state.isLessonLoaded
-                  ? AspectRatio(
-                      aspectRatio: state.controller.value.aspectRatio,
-                      child: VideoPlayer(state.controller),
-                    )
-                  : circularLoader();
-            },
-          ),
-        ),
-        //  video progress bar
-        BlocBuilder<LessonBloc, LessonState>(
-          buildWhen: (previous, current) {
-            return (previous.currentProgress != current.currentProgress);
-          },
-          builder: (context, state) {
-            return Slider(
+    return BlocBuilder<LessonBloc, LessonState>(builder: (context, state) {
+      print('state $state');
+      return SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // video player
+            SizedBox(
+                width: MediaQuery.of(context).size.width + 10,
+                height: MediaQuery.of(context).size.height / 3,
+                child: state.isLessonLoaded
+                    ? AspectRatio(
+                        aspectRatio: state.controller.value.aspectRatio,
+                        child: VideoPlayer(state.controller),
+                      )
+                    : circularLoader()),
+            //  video progress bar
+            Slider(
               min: 0,
               max: state.lessonDuration,
               value: state.currentProgress,
               onChanged: (val) {},
               onChangeStart: (val) {},
               onChangeEnd: (val) => {},
-            );
-          },
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            //   controls
-            BlocBuilder<LessonBloc, LessonState>(
-              builder: (context, state) {
-                return Row(
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                //   controls
+                Row(
                   key: Key('${state.controller.value.isPlaying}'),
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -58,20 +48,6 @@ class InteractLesson extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 10.0, right: 10.0),
                       child: PrimaryButton(
                         onPressed: () {
-                          // BlocProvider.of<LessonBloc>(context).add(SeekLesson(-10.0));
-                        },
-                        child: const Text(
-                          '-10',
-                          style: btnFontStyle,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                      child: PrimaryButton(
-                        onPressed: () {
-                          print('button clicked');
-                          print(state.controller.value.isPlaying);
                           if (state.controller.value.isPlaying) {
                             context.read<LessonBloc>().add(PauseChapter());
                           } else {
@@ -86,32 +62,20 @@ class InteractLesson extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                      child: PrimaryButton(
-                        onPressed: () {
-                          // BlocProvider.of<LessonBloc>(context).add(SeekLesson(10.0));
-                        },
-                        child: const Text(
-                          '+10',
-                          style: btnFontStyle,
-                        ),
-                      ),
-                    ),
                   ],
-                );
-              },
+                )
+              ],
             ),
             const SizedBox(
               height: 10.0,
             ),
             // name and chapter number
             chapterDetails(),
-            // const ChapterQuestionnaire(),
+            const ChapterQuestionnaire(),
           ],
-        )
-      ],
-    );
+        ),
+      );
+    });
   }
 }
 
@@ -122,29 +86,27 @@ Widget chapterDetails() {
   );
   return BlocBuilder<LessonBloc, LessonState>(
     builder: (context, state) {
-      return Expanded(
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Chapter ${state.completedChapters.length + 1}',
-                style: const TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Chapter ${state.completedChapters.length + 1}',
+              style: const TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
               ),
-              Text(
-                'Name: ${state.currentChapter.data.videometa.name}',
-                style: nameDescStyle,
-              ),
-              Text(
-                'Description: ${state.currentChapter.data.videometa.description}',
-                style: nameDescStyle,
-              ),
-            ],
-          ),
+            ),
+            Text(
+              'Name: ${state.currentChapter.data.videometa.name}',
+              style: nameDescStyle,
+            ),
+            Text(
+              'Description: ${state.currentChapter.data.videometa.description}',
+              style: nameDescStyle,
+            ),
+          ],
         ),
       );
     },
@@ -168,41 +130,86 @@ class _ChapterQuestionnaireState extends State<ChapterQuestionnaire> {
   Widget build(BuildContext context) {
     return BlocBuilder<LessonBloc, LessonState>(
       builder: (context, state) {
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (state.isCurrChapterDone) ...[
-                  Text(
-                    '${state.currentChapter.data.videometa.choicebreakpoint?.question}',
+        return Padding(
+          padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (state.isCurrChapterDone) ...[
+                Text(
+                  '${state.currentChapter.data.videometa.choicebreakpoint?.question}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15.0,
                   ),
-                  if (state.currentChapter.data.videometa.choicebreakpoint!
-                      .choices.isNotEmpty)
-                    for (var choice in state.currentChapter.data.videometa
-                        .choicebreakpoint!.choices)
-                      Material(
-                        color: Colors.black,
-                        child: RadioListTile(
-                          title: Text(
-                            choice.label,
+                ),
+                if (state.currentChapter.data.videometa.choicebreakpoint!
+                    .choices.isNotEmpty)
+                  for (var choice in state
+                      .currentChapter.data.videometa.choicebreakpoint!.choices)
+                    Material(
+                      child: RadioListTile(
+                        dense: true,
+                        title: Text(
+                          choice.label,
+                          style: const TextStyle(
+                            fontSize: 15.0,
+                            fontWeight: FontWeight.bold,
                           ),
-                          value: choice.value,
-                          groupValue: selectedChoice,
-                          onChanged: (value) {
-                            setState(
-                              () {
-                                selectedChoice = value!;
-                                showProceedButton = true;
-                              },
-                            );
-                          },
                         ),
+                        value: choice.value,
+                        groupValue: selectedChoice,
+                        onChanged: (value) {
+                          setState(
+                            () {
+                              selectedChoice = value!;
+                              showProceedButton = true;
+                            },
+                          );
+                        },
                       ),
-                ],
+                    ),
               ],
-            ),
+              showProceedButton
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateColor.resolveWith(
+                                (states) => Colors.green[300]!),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              ChoiceBreakPoint choiceBP = state.currentChapter
+                                  .data.videometa.choicebreakpoint!;
+                              if (selectedChoice.isNotEmpty) {
+                                Choice reqChoice = choiceBP.choices.firstWhere(
+                                    (ele) => ele.value == selectedChoice);
+                                context
+                                    .read<LessonBloc>()
+                                    .add(SaveChapterChoice(reqChoice));
+                                setState(() {
+                                  showProceedButton = false;
+                                  selectedChoice = '';
+                                });
+                              }
+                            });
+                          },
+                          child: const Text(
+                            'Procced',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.0),
+                          ),
+                        )
+                      ],
+                    )
+                  : const SizedBox(
+                      height: 10.0,
+                    )
+            ],
           ),
         );
       },

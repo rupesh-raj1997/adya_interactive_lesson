@@ -9,7 +9,7 @@ void main() {
   lessonBloc.add(LessonInitializing());
   runApp(
     BlocProvider(
-      create: (context) => lessonBloc,
+      create: (context) =>lessonBloc,
       lazy: false,
       child: MaterialApp(
         title: 'Adya Interactive Lesson',

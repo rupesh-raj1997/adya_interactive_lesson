@@ -72,6 +72,6 @@ class LessonState {
 
   @override
   String toString() {
-    return 'state lessonDuration is $lessonDuration controller is $controller';
+    return 'state completed chapters count ${completedChapters.length} lessonDuration is $lessonDuration controller is $controller';
   }
 }

@@ -22,6 +22,7 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
       }
 
       if (state.controller.value.isCompleted) {
+        
         add(EndChapter());
       }
     }
@@ -38,32 +39,63 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     });
 
     on<EndChapter>((event, emit) async {
+      print('bloc recieved and event $event');
       // At the end of chapter we ask question if we have
-      ChoiceBreakPoint choiceBP = state.currentChapter.data.videometa.choicebreakpoint!;
-      if(choiceBP.question.isNotEmpty && choiceBP.choices.isNotEmpty){
-       emit(state.copyWith(isCurrChapterDone: true));
+      ChoiceBreakPoint choiceBP =
+          state.currentChapter.data.videometa.choicebreakpoint!;
+      if (choiceBP.question.isNotEmpty && choiceBP.choices.isNotEmpty) {
+        emit(state.copyWith(isCurrChapterDone: true));
+      } else {
+        var newChap = state.currentChapter.children.first;
+        var comChaps = List<Chapter>.from(state.completedChapters);
+        comChaps.add(state.currentChapter);
+        double currProgress = 0.0;
+        for (var ele in comChaps) {
+          currProgress += ele.data.videometa.duration;
+          var newController =
+              VideoPlayerController.networkUrl(Uri.parse(newChap.videoURL));
+          await newController.initialize();
+          newController.addListener(_controllerListener);
+          emit(state.copyWith(
+            isCurrChapterDone: false,
+            controller: newController,
+            completedChapters: comChaps,
+            currentChapter: newChap,
+            currentProgress: currProgress,
+          ));
+          add(StartChapter());
+        }
       }
-      // if (choiceBreakPoint.choices.isNotEmpty) {
-      //   // user has to select to proceed
-      // } else {
-      //   // user need not make any choice we can mark this chapter complete and next chapter
-      //   state.completedChapters.add(state.currentChapter);
-      //   Chapter nextChapter = state.currentChapter.children.first;
-      //   VideoPlayerController videoPlayerController =
-      //       VideoPlayerController.networkUrl(Uri.parse(nextChapter.videoURL));
-      //   await videoPlayerController.initialize();
-      //   videoPlayerController.addListener(_controllerListener);
-      //   emit(state.copyWith(
-      //     controller: videoPlayerController,
-      //     isLessonLoaded: !state.isLessonLoaded,
-      //   ));
-      // }
     });
 
-    on<SaveChapterChoice>((event, emit) {
-      Map<Chapter, Choice> updatedChoices =  state.selectedChoices;
-      updatedChoices[state.currentChapter] = event.selectedChoice;
-      emit(state.copyWith(selectedChoices: updatedChoices));
+    on<SaveChapterChoice>((event, emit) async {
+      // user has selected a choice we can proceed to next lesson
+      Choice sChoice = event.selectedChoice;
+      Chapter newChap = state.currentChapter.children.firstWhere((chap) {
+        return sChoice.value.contains('${chap.data.videometa.id}');
+      });
+      List<Chapter> comChaps = List.from(state.completedChapters);
+      comChaps.add(state.currentChapter);
+      var selChoices = Map<Chapter, Choice>.from(state.selectedChoices);
+      selChoices[state.currentChapter] = sChoice;
+
+      double currProgress = 0.0;
+      for (var ele in comChaps) {
+        currProgress += ele.data.videometa.duration;
+      }
+      VideoPlayerController newController =
+          VideoPlayerController.networkUrl(Uri.parse(newChap.videoURL));
+      await newController.initialize();
+      newController.addListener(_controllerListener);
+      emit(state.copyWith(
+        isCurrChapterDone: false,
+        controller: newController,
+        completedChapters: comChaps,
+        selectedChoices: selChoices,
+        currentChapter: newChap,
+        currentProgress: currProgress,
+      ));
+      add(StartChapter());
     });
 
     on<PauseChapter>((event, emit) async {
