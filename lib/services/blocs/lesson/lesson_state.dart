@@ -4,6 +4,7 @@ class LessonState {
   final Lesson lesson;
   final VideoPlayerController controller;
   final bool isLessonLoaded;
+  final bool isLessonCompleted;
   final bool isCurrChapterDone;
   final List<Chapter> completedChapters;
   final double currentProgress;
@@ -14,6 +15,7 @@ class LessonState {
       {required this.lesson,
       required this.controller,
       required this.isLessonLoaded,
+      required this.isLessonCompleted,
       required this.completedChapters,
       required this.selectedChoices,
       required this.currentChapter,
@@ -27,6 +29,7 @@ class LessonState {
     return LessonState._(
       lesson: lesson,
       isLessonLoaded: false,
+      isLessonCompleted: false,
       isCurrChapterDone: false,
       currentProgress: 0.0,
       controller: controller,
@@ -44,6 +47,7 @@ class LessonState {
     Lesson? lesson,
     VideoPlayerController? controller,
     bool? isLessonLoaded,
+    bool? isLessonCompleted,
     bool? isCurrChapterDone,
     List<Chapter>? completedChapters,
     Map<Chapter, Choice>? selectedChoices,
@@ -54,6 +58,7 @@ class LessonState {
       lesson: lesson ?? this.lesson,
       controller: controller ?? this.controller,
       isLessonLoaded: isLessonLoaded ?? this.isLessonLoaded,
+      isLessonCompleted: isLessonCompleted ?? this.isLessonCompleted,
       completedChapters: completedChapters ?? this.completedChapters,
       selectedChoices: selectedChoices ?? this.selectedChoices,
       currentChapter: currentChapter ?? this.currentChapter,

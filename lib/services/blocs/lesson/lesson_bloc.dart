@@ -3,7 +3,7 @@ import 'package:adya_interactive_lesson/models/video.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:video_player/video_player.dart';
-import 'package:adya_interactive_lesson/utils/converters.dart';
+import 'package:adya_interactive_lesson/utils/common.dart';
 
 part 'lesson_event.dart';
 part 'lesson_state.dart';
@@ -22,8 +22,13 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
       }
 
       if (state.controller.value.isCompleted) {
-        
-        add(EndChapter());
+        // check if completion of this video completes the lesson
+        if (state.completedChapters.length ==
+            findHeight(state.lesson.lessonStart)) {
+          add(CompleteLesson());
+        } else {
+          add(EndChapter());
+        }
       }
     }
 
@@ -104,6 +109,10 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
 
     on<ProgressChapter>((event, emit) async {
       emit(state.copyWith(currentProgress: event.newPosition));
+    });
+
+    on<CompleteLesson>((event, emit) async {
+      emit(state.copyWith(isLessonCompleted: true));
     });
   }
 }

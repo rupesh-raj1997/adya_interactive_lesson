@@ -21,7 +21,7 @@ final class SaveChapterChoice extends LessonEvent {
   const SaveChapterChoice(this.selectedChoice);
 }
 final class RestartLesson extends LessonEvent {} // restart lesson
-
+final class CompleteLesson extends LessonEvent {} 
 final class ProgressChapter extends LessonEvent {
   final double newPosition;
   const ProgressChapter(this.newPosition);

@@ -1,5 +1,6 @@
 import 'package:adya_interactive_lesson/models/video.dart';
 import 'package:adya_interactive_lesson/services/blocs/lesson/lesson_bloc.dart';
+import 'package:adya_interactive_lesson/utils/common.dart';
 import 'package:adya_interactive_lesson/widgets/button.dart';
 import 'package:adya_interactive_lesson/widgets/loader.dart';
 import 'package:flutter/material.dart';
@@ -9,72 +10,111 @@ import 'package:video_player/video_player.dart';
 class InteractLesson extends StatelessWidget {
   const InteractLesson({super.key});
 
+  Function handleRestart() {
+    return () => {};
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<LessonBloc, LessonState>(builder: (context, state) {
-      print('state $state');
-      return SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // video player
-            SizedBox(
-                width: MediaQuery.of(context).size.width + 10,
-                height: MediaQuery.of(context).size.height / 3,
-                child: state.isLessonLoaded
-                    ? AspectRatio(
-                        aspectRatio: state.controller.value.aspectRatio,
-                        child: VideoPlayer(state.controller),
-                      )
-                    : circularLoader()),
-            //  video progress bar
-            Slider(
-              min: 0,
-              max: state.lessonDuration,
-              value: state.currentProgress,
-              onChanged: (val) {},
-              onChangeStart: (val) {},
-              onChangeEnd: (val) => {},
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                //   controls
-                Row(
-                  key: Key('${state.controller.value.isPlaying}'),
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                      child: PrimaryButton(
-                        onPressed: () {
-                          if (state.controller.value.isPlaying) {
-                            context.read<LessonBloc>().add(PauseChapter());
-                          } else {
-                            context.read<LessonBloc>().add(StartChapter());
-                          }
-                        },
-                        child: Icon(
-                          state.controller.value.isPlaying
-                              ? Icons.pause
-                              : Icons.play_arrow,
-                          color: Colors.white,
-                        ),
+      return state.isLessonCompleted
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Lesson Completed',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      restart(context);
+                    },
+                    child: const Text(
+                      'Restart',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
                       ),
                     ),
-                  ],
-                )
-              ],
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            // name and chapter number
-            chapterDetails(),
-            const ChapterQuestionnaire(),
-          ],
-        ),
-      );
+                  ),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // video player
+                  SizedBox(
+                      width: MediaQuery.of(context).size.width + 10,
+                      height: MediaQuery.of(context).size.height / 3,
+                      child: state.isLessonLoaded
+                          ? AspectRatio(
+                              aspectRatio: state.controller.value.aspectRatio,
+                              child: VideoPlayer(state.controller),
+                            )
+                          : circularLoader()),
+                  //  video progress bar
+                  Slider(
+                    min: 0,
+                    max: state.lessonDuration,
+                    value: state.currentProgress,
+                    onChanged: (val) {},
+                    onChangeStart: (val) {},
+                    onChangeEnd: (val) => {},
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      //   controls
+                      Row(
+                        key: Key('${state.controller.value.isPlaying}'),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 10.0, right: 10.0),
+                            child: PrimaryButton(
+                              onPressed: () {
+                                if (state.controller.value.isPlaying) {
+                                  context
+                                      .read<LessonBloc>()
+                                      .add(PauseChapter());
+                                } else {
+                                  context
+                                      .read<LessonBloc>()
+                                      .add(StartChapter());
+                                }
+                              },
+                              child: Icon(
+                                state.controller.value.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  // name and chapter number
+                  chapterDetails(),
+                  const ChapterQuestionnaire(),
+                ],
+              ),
+            );
     });
   }
 }
